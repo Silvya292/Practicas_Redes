@@ -19,8 +19,8 @@
 
 using namespace std;
 
-void start();
-void gameOptions();
-void gameInterface();
+void start(); //Interfaz principal del cliente
+void gameOptions(); //Interfaz para el comienzo de la partida
+void gameInterface(); //Interfaz con las opciones de juego
 
 #endif

@@ -1,8 +1,8 @@
-#include "juego.h"
+#include "./include/juego.h"
 
 //FUNCIONES PARA LA COMPROBACIÓN DE ALINEACIÓN GANADORA
 
-int conectaVertical(int columna, int fila, char jugador, char tablero[FILAS][COLUMNAS]){
+int Partida::conectaVertical(int columna, int fila, char jugador,char tablero[FILAS][COLUMNAS]){
     int filaInicio; //Fila comienzo de la comprobación
     if(fila-3>0){
         filaInicio=fila-3;
@@ -23,7 +23,7 @@ int conectaVertical(int columna, int fila, char jugador, char tablero[FILAS][COL
     return contador;
 }
 
-int conectaHorizontal(int columna, int fila, char jugador, char tablero[FILAS][COLUMNAS]){
+int Partida::conectaHorizontal(int columna, int fila, char jugador,char tablero[FILAS][COLUMNAS]){
     int columnaFinal; //Columna final de la comprobación
     if(columna+4<COLUMNAS){
         columnaFinal=columna+3;
@@ -44,7 +44,7 @@ int conectaHorizontal(int columna, int fila, char jugador, char tablero[FILAS][C
     return contador;
 }
 
-int conectaDiagonalAscendente(int columna, int fila, char jugador, char tablero[FILAS][COLUMNAS]){
+int Partida::conectaDiagonalAscendente(int columna, int fila, char jugador,char tablero[FILAS][COLUMNAS]){
     int filaInicio;
     if(fila-3>0){
         filaInicio=fila-3;
@@ -75,7 +75,7 @@ int conectaDiagonalAscendente(int columna, int fila, char jugador, char tablero[
     return contador;
 }
 
-int conectaDiagonalDescendente(int columna, int fila, char jugador, char tablero[FILAS][COLUMNAS]){
+int Partida::conectaDiagonalDescendente(int columna, int fila, char jugador,char tablero[FILAS][COLUMNAS]){
     int columnaFinal;
     if(columna+4<COLUMNAS){
         columnaFinal=columna+3;
@@ -108,7 +108,7 @@ int conectaDiagonalDescendente(int columna, int fila, char jugador, char tablero
 
 //FUNCIÓN PARA LA DETERMINACIÓN DE GANADOR O EMPATE
 
-int ganador(char jugador, char tablero[FILAS][COLUMNAS]){
+int Partida::ganador(char jugador,char tablero[FILAS][COLUMNAS]){
     for(int fila=0;fila<FILAS;fila++){
         for(int columna=0;columna<COLUMNAS;columna++){
             if(conectaVertical(columna,fila,jugador,tablero)>=4){
@@ -128,9 +128,9 @@ int ganador(char jugador, char tablero[FILAS][COLUMNAS]){
     return NO_CONECTA;
 }
 
-int empate(char tablero[FILAS][COLUMNAS]){
+int Partida::empate(char tablero[FILAS][COLUMNAS]){
     for(int i=0;i<COLUMNAS;i++){
-        int resultado=obtenerFilaDesocupada(i,tablero);
+        int resultado=obtenerFilaDesocupada(i);
         if(resultado!=NO_VALID){
             return 0;
         }
@@ -138,7 +138,7 @@ int empate(char tablero[FILAS][COLUMNAS]){
     return 1;
 }
 
-int obtenerFilaDesocupada(int columna, char tablero[FILAS][COLUMNAS]){
+int Partida::obtenerFilaDesocupada(int columna){
     for(int i=FILAS-1;i>=0;i--){
         if(tablero[i][columna]==VACIO){
             return i;
@@ -158,7 +158,6 @@ void limpiarTablero(char tablero[FILAS][COLUMNAS]){
 }
 
 int dibujarTablero(char tablero[FILAS][COLUMNAS]){
-    cout<<endl;
     for(int i=0;i<COLUMNAS;i++){
         cout<<"|"<<i+1;
         if(i+1>=COLUMNAS){
@@ -175,14 +174,17 @@ int dibujarTablero(char tablero[FILAS][COLUMNAS]){
         }
         cout<<endl;
     }
+    cout<<endl;
     return 0;
 }
 
-int colocarFicha(char jugador, int columna, char tablero[FILAS][COLUMNAS]){
+//FUNCIÓN PARA COLOCAR LA FICHA EN EL TABLERO
+
+int Partida::colocarFicha(char jugador, int columna){
     if(columna<0 || columna>=COLUMNAS){
         return COLUMNA_INVALIDA;
     }
-    int fila=obtenerFilaDesocupada(columna,tablero);
+    int fila=obtenerFilaDesocupada(columna);
     if(fila==NO_VALID){
         return COLUMNA_LLENA;
     }
@@ -192,62 +194,84 @@ int colocarFicha(char jugador, int columna, char tablero[FILAS][COLUMNAS]){
 
 //FUNCIONES PARA LOS JUGADORES
 
-char oponente(char jugador){
-    if(jugador==JUGADOR_1){
-        return JUGADOR_2;
+int Partida::oponente(int sd){
+    if(this->getSdJugador1()==sd){
+        return getSdJugador2();
+    }
+    else if(this->getSdJugador2()==sd){
+        return getSdJugador1();
     }
     else{
-        return JUGADOR_1;
+        return -1;
     }
 }
 
-int pedirColumna(){
-    int columna;
-    cout<<endl<<"Indique la columna en la que desea colocar su ficha: ";
-    cin>>columna;
-    columna--;
-    return columna;
+//FUNCIÓN PARA PASAR EL TABLERO A UN STRING
+
+string Partida::tableroToString(char tablero[FILAS][COLUMNAS]){
+    string tablero_str="";
+
+    for(int i=0;i<FILAS;i++){
+        for(int j=0;j<COLUMNAS;j++){
+            if(tablero[i][j]==VACIO){
+                tablero_str.append("-,");
+            }
+            else if(tablero[i][j]==JUGADOR_1){
+                tablero_str.append("o,");
+            }
+            else if(tablero[i][j]==JUGADOR_2){
+                tablero_str.append("x,");
+            }
+
+            if(j==COLUMNAS-1){
+                tablero_str.pop_back();
+                tablero_str.append(";");
+            }
+        }
+    }
+
+    return tablero_str;
 }
 
-//FUNCIÓN PARA JUGAR
+//FUNCIÓN PARA PASAR EL TABLERO A UN FORMATO LEGIBLE PARA EL CLIENTE
 
-void jugar(){
-    char tablero[FILAS][COLUMNAS];
-    limpiarTablero(tablero);
-    char jugadorActual=JUGADOR_1;
+void stringToMatrix(string tablero){
+    tablero.pop_back();
+    int aux=tablero.find(":");
+    string newTab=tablero.substr(aux+2, tablero.length()+1);
 
-    while(1){
-        int columna=0;
-        //system("clear");
-        cout<<endl<<"Turno del jugador "<<jugadorActual<<endl;
-        dibujarTablero(tablero);
-        columna=pedirColumna();
-        int estado=colocarFicha(jugadorActual,columna,tablero);
-        while(estado!=CORRECT){
-            if(estado==COLUMNA_LLENA){
-                cout<<"-Err. Columna llena"<<endl;
-                columna=pedirColumna();
-                estado=colocarFicha(jugadorActual,columna,tablero);
-            }
-            else if(estado==COLUMNA_INVALIDA){
-                cout<<"-Err. Columna inválida"<<endl;
-                columna=pedirColumna();
-                estado=colocarFicha(jugadorActual,columna,tablero);
-            }
+    for(int i=0;i<COLUMNAS;i++){
+        cout<<"|"<<i+1;
+        if(i+1>=COLUMNAS){
+            cout<<"|";
         }
-        if(estado==CORRECT){
-            int win=ganador(jugadorActual,tablero);
-            if(win!=NO_CONECTA){
-                dibujarTablero(tablero);
-                cout<<endl<<"Victoria del jugador "<<jugadorActual<<endl<<endl;
-                break;
-            }
-            else if(empate(tablero)){
-                dibujarTablero(tablero);
-                cout<<endl<<"Empate"<<endl<<endl;
-                break;
-            }
-        }
-        jugadorActual=oponente(jugadorActual);
     }
+    cout<<endl;
+
+    cout<<"|";
+    for(int i=0;i<newTab.size();i++){
+        if(newTab[i]=='-'){
+            cout<<VACIO;
+        }
+        else if(newTab[i]=='o'){
+            cout<<JUGADOR_1;
+        }
+        else if(newTab[i]=='x'){
+            cout<<JUGADOR_2;
+        }
+        else if(newTab[i]==','){
+            cout<<"|";
+        }
+        if(newTab[i]==';' && (i!=newTab.size()-1)){
+            cout<<"|";
+            cout<<endl;
+            cout<<"|";
+        }
+        if(newTab[i]==';' && (i==newTab.size()-1)){
+            cout<<"|";
+            cout<<endl;
+        }
+        
+    }
+    cout<<endl;
 }

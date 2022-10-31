@@ -1,13 +1,9 @@
-#include "cliente.h"
+#include "./include/cliente.h"
+#include "./include/juego.h"
 
-int main ( ){
-
-	bool correctUsername=false; //Comprueba que sea correcto el nombre de usuario
-	bool correctPassword=false; //Coprueba que sea correcta la contraseña
-    bool playing=false;         //Comprueba si el usuario está jugando
-    bool turn=false;            //Comprueba si es el turno de juego del usuario
-
-	/*---------------------------------------------------- 
+//Cliente que contiene las interfaces de juego y la traducción de los mensajes del servidor
+int main(){
+    /*---------------------------------------------------- 
 		Descriptor del socket y buffer de datos                
 	-----------------------------------------------------*/
 	int sd;
@@ -33,7 +29,7 @@ int main ( ){
 	-------------------------------------------------------------------*/
 	sockname.sin_family = AF_INET;
 	sockname.sin_port = htons(2060);
-	sockname.sin_addr.s_addr =  inet_addr("192.168.0.103");
+	sockname.sin_addr.s_addr =  inet_addr("127.0.0.1");
 
 	/* ------------------------------------------------------------------
 		Se solicita la conexión con el servidor
@@ -54,10 +50,7 @@ int main ( ){
     FD_SET(0,&readfds);
     FD_SET(sd,&readfds);
 
-    /* ------------------------------------------------------------------
-		Se transmite la información
-	-------------------------------------------------------------------*/
-	start();
+    start(); //Se imprime la interfaz de comienzo
 	do{
 		auxfds=readfds;
 		salida=select(sd+1,&auxfds, NULL, NULL, NULL);
@@ -66,37 +59,61 @@ int main ( ){
 			bzero(buffer,sizeof(buffer));
             recv(sd,buffer,sizeof(buffer),0);
 
-			printf("%s",buffer);
-
-			if(strcmp(buffer, "-Err. Demasiados clientes conectados. Inténtelo de nuevo más tarde.\n")==0 || strcmp(buffer,"-Err. Servidor desconectado.\n")){
+			if(strcmp(buffer, "-Err. Demasiados clientes conectados. Inténtelo de nuevo más tarde.\n")==0 || strcmp(buffer,"-Err. Servidor desconectado.\n")==0){
 				fin=1;
 			}
-			if(strcmp(buffer, "+Ok. Nombre de usuario correcto.\n")==0){
-				correctUsername=true;
-				cout<<"Introduzca su contraseña (PASSWORD <contraseña>): ";
+
+			if(strcmp(buffer, "+Ok. Tu oponente ha salido de la partida.\n")==0){
+				fin=1;
 			}
-			if(strcmp(buffer, "+Ok. Contraseña correcta. Sesión iniciada correctamente.\n")==0){
-				correctPassword=true;
-				cout<<buffer;
+
+			if(strcmp(buffer, "+Ok. Usuario validado.\n")==0){
+				system("clear");
 				gameOptions();
 			}
-            if(regex_match(buffer, (regex("(^\\+Ok\\. Empieza la partida\\.")))){ //TODO:
-                gameInterface();
-                playing=true;
 
-                if(turn==true){
-                    printf("+Ok. Turno de partida\n");
-                }
+			if(strncmp(buffer, "+Ok. Empieza la partida: -,-,-,-,-,-,-;-,-,-,-,-,-,-;-,-,-,-,-,-,-;-,-,-,-,-,-,-;-,-,-,-,-,-,-;-,-,-,-,-,-,-;\n",strlen("+Ok. Empieza la partida: -,-,-,-,-,-,-;-,-,-,-,-,-,-;-,-,-,-,-,-,-;-,-,-,-,-,-,-;-,-,-,-,-,-,-;-,-,-,-,-,-,-;\n"))==0){
+				system("clear");
+				gameInterface();
+				stringToMatrix(buffer);
+			}
 
-                else{
-                    printf("+Ok. Turno del otro jugador\n");
-                }
-            }
-            if(strcmp(buffer, "+Ok. Petición Recibida. Esperando a más jugadores\n") == 0){
-                turn=true;
-            }
-            
+			else if(strncmp(buffer, "+Ok. Nuevo tablero: ", strlen("+Ok. Nuevo tablero: "))==0){
+				system("clear");
+				gameInterface();
+				stringToMatrix(buffer);
+			}
+
+			else if(strncmp(buffer, "+Ok. Victoria del jugador ",strlen("+Ok. Victoria del jugador "))==0){
+				printf("%s",buffer);
+				fin=1;
+			}
+
+			else if(strncmp(buffer, "+Ok. Se ha producido un empate en la partida\n",strlen("+Ok. Se ha producido un empate en la partida\n"))==0){
+				printf("%s",buffer);
+				fin=1;
+			}
+
+			else{
+				printf("%s",buffer);
+			}
+
 		}
+
+		else{
+			if(FD_ISSET(0,&auxfds)){
+				bzero(buffer,sizeof(buffer));
+				fgets(buffer,sizeof(buffer),stdin);
+
+                if(strcmp(buffer,"SALIR\n")==0){
+                    fin = 1;
+                }
+
+				send(sd,buffer,sizeof(buffer),0);
+				
+			}
+		}
+
 	}while(fin==0);
 		
 	close(sd);

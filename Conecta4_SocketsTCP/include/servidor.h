@@ -21,13 +21,15 @@
 #include <ctype.h>
 #include <regex.h>
 
+#include "juego.h"
+
 using namespace std;
 
+//Clase usuario con los distintos valores necesario sen el sistema
 class Usuario{
     private:
         string userName;
         string password;
-        bool isIn;
         int sd;
 
     public:
@@ -35,7 +37,6 @@ class Usuario{
             this->setUsername(username);
             this->setPassword(password);
             this->setSd(sd);
-            this->isIn = false;
         }
 
         Usuario(){
@@ -43,51 +44,38 @@ class Usuario{
             this->password = "";
         }
 
-        string getUsername(){
+        inline string getUsername(){
             return this->userName; 
         }
 
-        string getPassword(){ 
+        inline string getPassword(){ 
             return this->password; 
         }
 
-        int getSd(){ 
+        inline int getSd(){ 
             return this->sd; 
         }
 
-        bool isIn(){ 
-            return this->isIn; 
-        }
-
-        void setUsername(string username){ 
+        inline void setUsername(string username){ 
             this->userName = username; 
         }
 
-        void setPassword(string password){ 
+        inline void setPassword(string password){ 
             this->password = password; 
         }
 
-        void setSd(int sd){ 
+        inline void setSd(int sd){ 
             this->sd = sd; 
-        }
-
-        void setisIn(bool isIn){ 
-            this->isIn = isIn; 
         }
 };
 
 vector<Usuario> cargarUsuarios(); //Lista con los usuarios guardados en el fichero
-
 bool registrarUsuario(Usuario usuario, vector<Usuario> usuarios); //Añade un nuevo usuario al fichero
 
 bool comprobarPassword(string password, string usuario, vector<Usuario> usuarios); //Comprueba si la contraseña pertenece al nombre de usuario indicado
-
 bool usuarioRepetido(string usuario, vector<Usuario> usuarios); //Comprueba si ya existe el nombre de usuario indicado
-
 bool usuarioRegistrado(string usuario, vector<Usuario> usuariosIn); //Comprueba si el usuario se ha registrado previamente
 
-void enviarMensaje(string mensaje, int sd); //Envía un mensaje a través del descriptor sd
-
-//TODO: int partida(int sd, vector<Partida> partidas); //Comprueba en qué partida está el usuario
+int partida(int sd, vector<Partida> partidas); //Comprueba en qué partida está el usuario
 
 #endif

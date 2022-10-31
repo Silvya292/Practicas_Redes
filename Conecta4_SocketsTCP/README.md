@@ -1,4 +1,4 @@
-Nombre: Silvia Roldán Flores
+Nombre: Silvia
 Curso: 3º Ingeniería Informática
 Fecha: 24/10/2022
 
